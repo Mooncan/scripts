@@ -1,2 +1,2 @@
 # scripts
-some script backup.
+some scripts backup.
