@@ -1,0 +1,11 @@
+SET TextAsNumber TO 0
+LOOP WHILE (TextAsNumber) = (0)
+    Scripting.RunDOSCommand.RunDOSCommand DOSCommandOrApplication: $'''tcping localhost 443''' StandardOutput=> CommandOutput StandardError=> CommandErrorOutput ExitCode=> CommandExitCode
+    Text.SplitText.Split Text: CommandOutput StandardDelimiter: Text.StandardDelimiter.Tab DelimiterTimes: 1 Result=> TextList
+    Text.CropText.CropTextBeforeFlag Text: TextList[2] ToFlag: $'''.''' IgnoreCase: False CroppedText=> CroppedText IsFlagFound=> IsFlagFound
+    Text.GetSubtext.GetSubtextFromStartTo Text: CroppedText NumberOfChars: 1 Subtext=> Subtext
+    Text.ToNumber Text: Subtext Number=> TextAsNumber
+    WAIT 600
+END
+Email.SendEmail.AuthenticateAndSend SMTPServer: $'''smtp.exmail.qq.com''' Port: 465 EnableSSL: True Username: $'''service@mail.qq.com''' Password: P'YOURPASSWORD' AcceptUntrustedCertificates: False SendFrom: $'''service@mail.qq.com''' SenderDisplayName: $'''Power Automate Desktop''' SendTo: $'''mail@qq.com''' Subject: $'''目标IP状态和端口为通''' Body: $'''目标IP状态和端口为通，以下内容为tcping返回的值：
+%CommandOutput%''' IsBodyHtml: False

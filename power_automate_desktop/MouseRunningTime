@@ -1,0 +1,37 @@
+MouseAndKeyboard.GetMousePosition RelativeTo: MouseAndKeyboard.MousePositionRelativeTo.Screen X=> PreMousePosX Y=> PreMousePosY
+SET MovTime TO 0
+SET StopTime TO 0
+SET StopTimeCompare TO 0
+SET TimeDump TO 0
+SET Circle TO 0
+DateTime.GetCurrentDateTime.Local DateTimeFormat: DateTime.DateTimeFormat.DateAndTime CurrentDateTime=> StartDateTime
+LOOP WHILE (Circle) = (0)
+    MouseAndKeyboard.GetMousePosition RelativeTo: MouseAndKeyboard.MousePositionRelativeTo.Screen X=> MousePosX Y=> MousePosY
+    IF (MousePosX = PreMousePosX AND MousePosY = PreMousePosY) = $'''TRUE''' THEN
+        WAIT 1
+        Variables.IncreaseVariable Value: StopTime IncrementValue: 1
+        IF StopTimeCompare <= 600 THEN
+            Variables.IncreaseVariable Value: MovTime IncrementValue: 1
+            Variables.IncreaseVariable Value: StopTimeCompare IncrementValue: 1
+            Variables.IncreaseVariable Value: TimeDump IncrementValue: 1
+        END
+    ELSE
+        SET StopTimeCompare TO 0
+        WAIT 1
+        Variables.IncreaseVariable Value: MovTime IncrementValue: 1
+    END
+    SET PreMousePosX TO MousePosX
+    SET PreMousePosY TO MousePosY
+    DateTime.GetCurrentDateTime.Local DateTimeFormat: DateTime.DateTimeFormat.DateAndTime CurrentDateTime=> StopDateTime
+    DateTime.Subtract FromDate: StopDateTime SubstractDate: StartDateTime TimeUnit: DateTime.DifferenceTimeUnit.Seconds TimeDifference=> TimeDifference
+    SET TimeDiff TO TimeDifference - (MovTime + StopTime - TimeDump)
+    File.WriteText File: $'''D:\\MouseMovingTime_%StartDateTime.Year%.%StartDateTime.Month%.%StartDateTime.Day%.%StartDateTime.Hour%.%StartDateTime.Minute%.log''' TextToWrite: $'''脚本开始日期： %StartDateTime%
+脚本结束日期： %StopDateTime%
+脚本执行总时间： %TimeDifference%
+（以下单位都为秒）
+鼠标实际耗电时间： %MovTime%
+鼠标实际动作时间但不包含停止状态进入休眠前的耗电： %MovTime - TimeDump%
+鼠标停止时间（包含鼠标未动但耗电的时间）： %StopTime%
+鼠标未动但处于活动状态耗电的时间：%TimeDump%
+程序运行时间和鼠标按秒累加算法的差值（即程序执行所耗费的时间）： %TimeDiff%''' AppendNewLine: False IfFileExists: File.IfFileExists.Overwrite Encoding: File.FileEncoding.UTF8
+END
